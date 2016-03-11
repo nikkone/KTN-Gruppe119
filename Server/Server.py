@@ -2,11 +2,14 @@
 import SocketServer
 import json
 import time
+import re
 """
 Variables and functions that must be used by all the ClientHandler objects
 must be written here (e.g. a dictionary for connected clients)
 """
-
+#Hentet fra http://stackoverflow.com/questions/1323364/in-python-how-to-check-if-a-string-only-contains-certain-characters
+def illegalSymoblCheck(strg, search=re.compile(r'[^a-z0-9A-Z]').search):
+	return bool(search(strg))
 users = {}
 history = []
 
@@ -56,11 +59,11 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                         print("History requested")
                         historyString=""
                         for msg in history:
-                            historyString += msg[1] + '\n'
+                            historyString += msg[0] + ":" +  msg[1] + '\n'
                         self.sendToSelf(time.strftime("%H:%M:%S"), "server", "history", historyString)
                     elif(request=="help"):
                         print("Help requested")
-                        self.sendToSelf(time.strftime("%H:%M:%S"), "server", "info", "Hjelp er for pingler!")
+                        self.sendToSelf(time.strftime("%H:%M:%S"), "server", "info", "Supported requests: login <username>, logout,msg <message>, names, help, history")
                     elif(request=="login"):
                         print("ERROR: Already logged in")
                         self.sendToSelf(time.strftime("%H:%M:%S"), "server", "error", "Already logged in")
@@ -80,11 +83,21 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                         elif(content==''):
                             print("ERROR: No username given")
                             self.sendToSelf(time.strftime("%H:%M:%S"), "server", "error", "No username given")
+                        elif(illegalSymoblCheck(content)):
+                            print("ERROR: Illegal symbols in username")
+                            self.sendToSelf(time.strftime("%H:%M:%S"), "server", "error", "Illegal symbols in username")
                         else:
                             print("User added: " + content)
                             self.sendToSelf(time.strftime("%H:%M:%S"), "server", "info", "Login sucessfull")
                             self.username=content
                             users[content] = self
+                            historyString=""
+                            for msg in history:
+                                historyString += msg[0] + ":" + msg[1] + '\n'
+                            self.sendToSelf(time.strftime("%H:%M:%S"), "server", "history", historyString)
+                    elif(request=="help"):
+                        print("Help requested")
+                        self.sendToSelf(time.strftime("%H:%M:%S"), "server", "info", "Supported requests: login <username>, logout,msg <message>, names, help, history")
                     else:
                         print("ERROR: Not logged in")
                         self.sendToSelf(time.strftime("%H:%M:%S"), "server", "error", "Not logged in")
