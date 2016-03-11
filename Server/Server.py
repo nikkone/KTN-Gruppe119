@@ -8,7 +8,7 @@ Variables and functions that must be used by all the ClientHandler objects
 must be written here (e.g. a dictionary for connected clients)
 """
 #Hentet fra http://stackoverflow.com/questions/1323364/in-python-how-to-check-if-a-string-only-contains-certain-characters
-def illegalSymoblCheck(strg, search=re.compile(r'[^a-z0-9A-Z]').search):
+def illegalSymbolCheck(strg, search=re.compile(r'[^a-z0-9A-Z]').search):
 	return bool(search(strg))
 users = {}
 history = []
@@ -83,7 +83,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                         elif(content==''):
                             print("ERROR: No username given")
                             self.sendToSelf(time.strftime("%H:%M:%S"), "server", "error", "No username given")
-                        elif(illegalSymoblCheck(content)):
+                        elif(illegalSymbolCheck(content)):
                             print("ERROR: Illegal symbols in username")
                             self.sendToSelf(time.strftime("%H:%M:%S"), "server", "error", "Illegal symbols in username")
                         else:
