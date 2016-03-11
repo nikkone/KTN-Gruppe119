@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
 import SocketServer
+import json
 
 """
 Variables and functions that must be used by all the ClientHandler objects
 must be written here (e.g. a dictionary for connected clients)
 """
+
+users = {}
+#connections = []
+#history = []
 
 class ClientHandler(SocketServer.BaseRequestHandler):
     """
@@ -21,11 +26,45 @@ class ClientHandler(SocketServer.BaseRequestHandler):
         self.ip = self.client_address[0]
         self.port = self.client_address[1]
         self.connection = self.request
-
+        self.username = ''
         # Loop that listens for messages from the client
         while True:
             received_string = self.connection.recv(4096)
-            
+            try:
+                received_json = json.loads(received_string)
+                content = received_json["content"]
+                request = received_json["request"]
+                #print(request)
+                #print(content)
+                if(self.username!=''):
+                    if(request=="msg"):
+                        print("Message received")
+                    elif(request=="login"):
+                        print("ERROR: Already logged in")
+                    elif(request=="logout"):
+                        print("User removed:" + self.username)
+                        users.pop(self.username, None)
+                        self.username=''
+                    else:
+                        print("ERROR: Unknown request")
+                    
+                    print(users)
+                else:
+                    if(request=="login"):
+                        if(content in users):
+                            print("ERROR: Username taken")
+                        elif(content==''):
+                            print("ERROR: No username given")
+                        else:
+                            print("User added: " + content)
+                            self.username=content
+                            users[content] = self
+                    else:
+                        print("ERROR: Not logged in")
+                        
+            except ValueError:
+                print("Not JSON-Object, closing.")
+                self.connection.close()
             # TODO: Add handling of received payload from client
 
 
