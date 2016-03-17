@@ -62,7 +62,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                     elif(request=="history"):
                         print("History requested")
                         for msg in history:
-                            self.sendToSelf(msg[0], msg[1], "history", msg[2])
+                            self.sendToSelf(time.strftime("%H:%M:%S"), "server", "history", msg[0] + " : " + msg[1] + " -> " + msg[2])
                     elif(request=="help"):
                         print("Help requested")
                         self.sendToSelf(time.strftime("%H:%M:%S"), "server", "info", "Supported requests: login <username>, logout,msg <message>, names, help, history")
@@ -95,7 +95,7 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                             users[content] = self
 
                             for msg in history:
-                                self.sendToSelf(msg[0], msg[1], "history", msg[2])
+                                self.sendToSelf(time.strftime("%H:%M:%S"), "server", "history", msg[0] + " : " + msg[1] + " -> " + msg[2])
 
                     elif(request=="help"):
                         print("Help requested")
