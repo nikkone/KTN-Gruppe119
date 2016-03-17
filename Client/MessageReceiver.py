@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
 from threading import Thread
-import socket
-from Client import *
 
 class MessageReceiver(Thread):
     """
@@ -19,7 +16,7 @@ class MessageReceiver(Thread):
 
         super(MessageReceiver, self).__init__()
 
-        # Flag to run thread as a deamon
+        # Flag to run thread as a daemon
         self.daemon = True
         self.Client = client
         self.Connection = connection
@@ -28,5 +25,6 @@ class MessageReceiver(Thread):
         # TODO: Finish initialization of MessageReceiver
 
     def run(self):
-        message = self.Connection.recv(1024)
-        self.Client.receive_message(message)
+        while True:
+            message = self.Connection.recv(1024)
+            self.Client.receive_message(message)

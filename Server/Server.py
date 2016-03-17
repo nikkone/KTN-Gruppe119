@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import SocketServer
 import json
 import time
@@ -9,7 +8,8 @@ must be written here (e.g. a dictionary for connected clients)
 """
 #Hentet fra http://stackoverflow.com/questions/1323364/in-python-how-to-check-if-a-string-only-contains-certain-characters
 def illegalSymbolCheck(strg, search=re.compile(r'[^a-z0-9A-Z]').search):
-	return bool(search(strg))
+    return bool(search(strg[0]))
+
 users = {}
 history = []
 
@@ -32,6 +32,9 @@ class ClientHandler(SocketServer.BaseRequestHandler):
         """
         This method handles the connection between a client and the server.
         """
+
+        global users, history
+
         self.ip = self.client_address[0]
         self.port = self.client_address[1]
         self.connection = self.request
@@ -41,26 +44,25 @@ class ClientHandler(SocketServer.BaseRequestHandler):
             received_string = self.connection.recv(4096)
             try:
                 received_json = json.loads(received_string)
-                content = received_json["content"]
+                content = str(received_json["content"])
                 request = received_json["request"]
-                
+
                 if(self.username!=''):
                     if(request=="msg"):
                         print("Message received")
-                        self.sendToAll(time.strftime("%H:%M:%S"), self.username, "message", content)
-                        history.append((self.username, content))
+                        timestamp = time.strftime("%H:%M:%S")
+                        self.sendToAll(timestamp, self.username, "message", content)
+                        history.append((timestamp, self.username, content))
                     elif(request=="names"):
                         print("Names requested")
                         namesString="Connected users: "
                         for key in users:
                             namesString+=key + " - "
-                        self.sendToSelf(time.strftime("%H:%M:%S"), "server", "info", namesString)
+                        self.sendToSelf(time.strftime("%H:%M:%S"), "server", "info", namesString[0:-1])
                     elif(request=="history"):
                         print("History requested")
-                        historyString=""
                         for msg in history:
-                            historyString += msg[0] + ":" +  msg[1] + '\n'
-                        self.sendToSelf(time.strftime("%H:%M:%S"), "server", "history", historyString)
+                            self.sendToSelf(msg[0], msg[1], "message", msg[2])
                     elif(request=="help"):
                         print("Help requested")
                         self.sendToSelf(time.strftime("%H:%M:%S"), "server", "info", "Supported requests: login <username>, logout,msg <message>, names, help, history")
@@ -74,10 +76,10 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                         self.username=''
                     else:
                         print("ERROR: Unknown request")
-                        self.sendToSelf(time.strftime("%H:%M:%S"), "server", "eror", "Unknown request")  
+                        self.sendToSelf(time.strftime("%H:%M:%S"), "server", "error", "Unknown request")
                 else:
                     if(request=="login"):
-                        if(content in users):
+                        if(content in users.values()):
                             print("ERROR: Username taken")
                             self.sendToSelf(time.strftime("%H:%M:%S"), "server", "error", "Username taken")
                         elif(content==''):
@@ -91,16 +93,17 @@ class ClientHandler(SocketServer.BaseRequestHandler):
                             self.sendToSelf(time.strftime("%H:%M:%S"), "server", "info", "Login sucessfull")
                             self.username=content
                             users[content] = self
-                            historyString=""
+
                             for msg in history:
-                                historyString += msg[0] + ":" + msg[1] + '\n'
-                            self.sendToSelf(time.strftime("%H:%M:%S"), "server", "history", historyString)
+                                self.sendToSelf(msg[0], msg[1], "message", msg[2])
+
                     elif(request=="help"):
                         print("Help requested")
                         self.sendToSelf(time.strftime("%H:%M:%S"), "server", "info", "Supported requests: login <username>, logout,msg <message>, names, help, history")
                     else:
                         print("ERROR: Not logged in")
                         self.sendToSelf(time.strftime("%H:%M:%S"), "server", "error", "Not logged in")
+
                         
             except ValueError:
                 print("Not JSON-Object, closing.")
