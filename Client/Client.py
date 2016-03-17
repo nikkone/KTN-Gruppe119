@@ -34,12 +34,11 @@ class Client:
         exit(0)
 
     def receive_message(self, message):
-        # TODO: Handle incoming message
-        pass
+        data = json.loads(message)
 
     def send_payload(self, data):
-        # TODO: Handle sending of a payload
-        pass
+        msg = json.dumps(data)
+        self.connection.send(msg)
         
     # More methods may be needed!
 
