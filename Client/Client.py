@@ -10,7 +10,7 @@ class Client:
     This is the chat client class
     """
 
-    msg = {"request": None, "content": None}
+    new_msg = {"request": None, "content": None}
     def __init__(self, host, server_port):
         """
         This method is run when creating a new Client object
