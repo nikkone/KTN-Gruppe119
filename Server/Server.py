@@ -25,8 +25,15 @@ class ClientHandler(SocketServer.BaseRequestHandler):
         self.connection.send(json_message)
 
     def sendToAll(self, timestamp, sender, response, content):
+        killedUsers=[]
         for key in users:
-            users[key].sendToSelf(timestamp, sender, response, content)
+            try:
+                users[key].sendToSelf(timestamp, sender, response, content)
+            except:
+                print "Removed user: " + key
+                killedUsers.append(key)
+        for user in killedUsers:
+            users.pop(user, None)
     
     def handle(self):
         """
