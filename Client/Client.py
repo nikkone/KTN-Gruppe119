@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import socket
+import json
+import string
 from MessageReceiver import MessageReceiver
 from MessageParser import MessageParser
 
@@ -8,6 +10,7 @@ class Client:
     This is the chat client class
     """
 
+    msg = {"request": None, "content": None}
     def __init__(self, host, server_port):
         """
         This method is run when creating a new Client object
@@ -15,17 +18,20 @@ class Client:
 
         # Set up the socket connection to the server
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        
+        self.connection.connect((host,server_port))
+        MessageReceiver(self,self.connection)
         # TODO: Finish init process with necessary code
         self.run()
 
     def run(self):
         # Initiate the connection to the server
         self.connection.connect((self.host, self.server_port))
-        
+        userinput = raw_input()
+        self.processClientInput(userinput)
     def disconnect(self):
-        # TODO: Handle disconnection
-        pass
+        self.connection.close()
+        print "Disconnected from server"
+        exit(0)
 
     def receive_message(self, message):
         # TODO: Handle incoming message
